@@ -11,6 +11,7 @@ namespace DoMyThing.Functions.Processors
     {
         public void Process(Model1 request)
         {
+
             throw new NotImplementedException();
         }
     }

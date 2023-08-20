@@ -4,6 +4,7 @@ using DoMyThing.Functions.Processors;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace DoMyThing.Functions
 {
@@ -26,8 +27,18 @@ namespace DoMyThing.Functions
         {
             _logger.LogInformation("C# HTTP trigger function processed a request.");
 
-            // TODO : Read model from body
-            var model = new Model1();
+            string requestBody = String.Empty;
+            using (StreamReader streamReader = new StreamReader(req.Body))
+            {
+                requestBody = streamReader.ReadToEnd();
+            }
+            var model = JsonConvert.DeserializeObject<Model1>(requestBody);
+
+            if (model is null)
+            {
+                throw new ArgumentNullException("model in body is required!");
+            }
+
             _processor.Process(model);
 
             var response = req.CreateResponse(HttpStatusCode.OK);
