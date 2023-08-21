@@ -14,7 +14,8 @@ namespace DoMyThing.Functions
         { }
         public IProcessor<T> GetProcessor<T>() where T : RequestModelBase
         {
-            return default;
+            // TODO : Implement here
+            return (IProcessor<T>) new DownloadSubtitleProcessor();
 
         }
     }

@@ -6,7 +6,8 @@ using System.Threading.Tasks;
 
 namespace DoMyThing.Functions.Models
 {
-    public class Model1 : RequestModelBase
+    public class DownloadSubtitleModel : RequestModelBase
     {
+        public string SearchText { get; set; }
     }
 }

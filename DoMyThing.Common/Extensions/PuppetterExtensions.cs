@@ -21,7 +21,7 @@ namespace PuppeteerSharp
         /// Creates local puppeteer instance. May require elevated users permission (VS ran as administrator)
         /// </summary>
         /// <returns></returns>
-        public static Task<IBrowser> CreateLocalPuppeteer(string userDataDir = null)
+        public static Task<IBrowser> CreateLocalPuppeteerAsync(string userDataDir = null)
         {
             var options = new LaunchOptions
             {
@@ -45,9 +45,12 @@ namespace PuppeteerSharp
         /// <returns></returns>
         public static async Task<IBrowser> CreateLocalPuppeteer(LaunchOptions launchOptions)
         {
-            var browserFetcher = new BrowserFetcher();
-            await browserFetcher.DownloadAsync();
+            var browserFetcher = new BrowserFetcher(new BrowserFetcherOptions
+            {
+                //Path = "./"
+            });
 
+            await browserFetcher.DownloadAsync();
             return await Puppeteer.LaunchAsync(launchOptions);
         }
 
@@ -94,7 +97,7 @@ namespace PuppeteerSharp
                 await page.SetViewportAsync(viewPortOptions);
             }
             await page.GoToAsync(url, new NavigationOptions() { WaitUntil = new[] { WaitUntilNavigation.DOMContentLoaded }, Timeout = 0 });
-            
+
             // TODO : Implement here
             //await page.UseAntiCaptchaAsync(anticaptchaKey, antiCaptchaStartsCallback);
             return page;

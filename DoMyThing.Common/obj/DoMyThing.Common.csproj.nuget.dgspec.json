@@ -47,9 +47,13 @@
               "target": "Package",
               "version": "[1.11.51, )"
             },
+            "PuppeteerExtraSharp": {
+              "target": "Package",
+              "version": "[2.0.0, )"
+            },
             "PuppeteerSharp": {
               "target": "Package",
-              "version": "[11.0.0, )"
+              "version": "[9.1.0, )"
             }
           },
           "imports": [

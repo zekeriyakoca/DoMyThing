@@ -151,7 +151,20 @@
           }
         }
       },
-      "PuppeteerSharp/11.0.0": {
+      "PuppeteerExtraSharp/2.0.0": {
+        "type": "package",
+        "dependencies": {
+          "PuppeteerSharp": "9.0.2",
+          "RestSharp": "108.0.3"
+        },
+        "compile": {
+          "lib/netstandard2.0/PuppeteerExtraSharp.dll": {}
+        },
+        "runtime": {
+          "lib/netstandard2.0/PuppeteerExtraSharp.dll": {}
+        }
+      },
+      "PuppeteerSharp/9.1.0": {
         "type": "package",
         "dependencies": {
           "Microsoft.AspNetCore.WebUtilities": "2.2.0",
@@ -167,6 +180,19 @@
         },
         "runtime": {
           "lib/netstandard2.0/PuppeteerSharp.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "RestSharp/108.0.3": {
+        "type": "package",
+        "compile": {
+          "lib/net6.0/RestSharp.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/RestSharp.dll": {
             "related": ".xml"
           }
         }
@@ -423,17 +449,47 @@
         "packageIcon.png"
       ]
     },
-    "PuppeteerSharp/11.0.0": {
-      "sha512": "GloSF2hRANohqNs5kczJpeThsW1jo56KcLCsGUwAOJo2yuuv23GX9kYsQ1n7tXHGD6pipDST3cpP3ljUm4eGYQ==",
+    "PuppeteerExtraSharp/2.0.0": {
+      "sha512": "dNbWUR1TEUOsNe0Ai2z260p7GTE3wa7I29oQAYoZDUtEkw2xwORsynhMu7iUhGqz+Ck2QpsUPKWmLdPHW+iv4w==",
       "type": "package",
-      "path": "puppeteersharp/11.0.0",
+      "path": "puppeteerextrasharp/2.0.0",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/netstandard2.0/PuppeteerExtraSharp.dll",
+        "puppeteerextrasharp.2.0.0.nupkg.sha512",
+        "puppeteerextrasharp.nuspec"
+      ]
+    },
+    "PuppeteerSharp/9.1.0": {
+      "sha512": "vJG35rOl0bIKlvw0RjKK2HMr031TlouwM0AkCBRUpYETWKYAnmBScViCZRi5tD+KyLyOJT7xyM2oUQE5oOauqQ==",
+      "type": "package",
+      "path": "puppeteersharp/9.1.0",
       "files": [
         ".nupkg.metadata",
         ".signature.p7s",
         "lib/netstandard2.0/PuppeteerSharp.dll",
         "lib/netstandard2.0/PuppeteerSharp.xml",
-        "puppeteersharp.11.0.0.nupkg.sha512",
+        "puppeteersharp.9.1.0.nupkg.sha512",
         "puppeteersharp.nuspec"
+      ]
+    },
+    "RestSharp/108.0.3": {
+      "sha512": "phq1AkVhqVXHZxvWDV4fJEJKCR5OHNFUGx2Ix8o5EFShS6654oZhth4X2RWvaU/W7UexIswW0T+lTirxfLU2Ow==",
+      "type": "package",
+      "path": "restsharp/108.0.3",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net5.0/RestSharp.dll",
+        "lib/net5.0/RestSharp.xml",
+        "lib/net6.0/RestSharp.dll",
+        "lib/net6.0/RestSharp.xml",
+        "lib/netstandard2.0/RestSharp.dll",
+        "lib/netstandard2.0/RestSharp.xml",
+        "restsharp.108.0.3.nupkg.sha512",
+        "restsharp.nuspec",
+        "restsharp.png"
       ]
     },
     "System.Buffers/4.5.0": {
@@ -546,7 +602,8 @@
   "projectFileDependencyGroups": {
     "net7.0": [
       "HtmlAgilityPack >= 1.11.51",
-      "PuppeteerSharp >= 11.0.0"
+      "PuppeteerExtraSharp >= 2.0.0",
+      "PuppeteerSharp >= 9.1.0"
     ]
   },
   "packageFolders": {
@@ -596,9 +653,13 @@
             "target": "Package",
             "version": "[1.11.51, )"
           },
+          "PuppeteerExtraSharp": {
+            "target": "Package",
+            "version": "[2.0.0, )"
+          },
           "PuppeteerSharp": {
             "target": "Package",
-            "version": "[11.0.0, )"
+            "version": "[9.1.0, )"
           }
         },
         "imports": [

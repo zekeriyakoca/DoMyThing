@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "GXChx/tV22PFYXAbvO6J9sFqWdYmzpsP+bVgKH4h9b4nWYi8EtGmH2yAFbW5eOP96M9cmSFDiJ9alzPa7zU4ag==",
+  "dgSpecHash": "8GEStA1fAq1R+CY34iiEL9zGULqIuCtD+sSZrMibAMFc4tdBWDMX+UkLi/0We71f4ZwFdH7eTbIeBb7nGTv3pw==",
   "success": true,
   "projectFilePath": "C:\\Users\\zeker\\source\\repos\\DoMyThing\\DoMyThing.Common\\DoMyThing.Common.csproj",
   "expectedPackageFiles": [
@@ -14,7 +14,9 @@
     "C:\\Users\\zeker\\.nuget\\packages\\microsoft.extensions.primitives\\2.2.0\\microsoft.extensions.primitives.2.2.0.nupkg.sha512",
     "C:\\Users\\zeker\\.nuget\\packages\\microsoft.net.http.headers\\2.2.0\\microsoft.net.http.headers.2.2.0.nupkg.sha512",
     "C:\\Users\\zeker\\.nuget\\packages\\newtonsoft.json\\13.0.1\\newtonsoft.json.13.0.1.nupkg.sha512",
-    "C:\\Users\\zeker\\.nuget\\packages\\puppeteersharp\\11.0.0\\puppeteersharp.11.0.0.nupkg.sha512",
+    "C:\\Users\\zeker\\.nuget\\packages\\puppeteerextrasharp\\2.0.0\\puppeteerextrasharp.2.0.0.nupkg.sha512",
+    "C:\\Users\\zeker\\.nuget\\packages\\puppeteersharp\\9.1.0\\puppeteersharp.9.1.0.nupkg.sha512",
+    "C:\\Users\\zeker\\.nuget\\packages\\restsharp\\108.0.3\\restsharp.108.0.3.nupkg.sha512",
     "C:\\Users\\zeker\\.nuget\\packages\\system.buffers\\4.5.0\\system.buffers.4.5.0.nupkg.sha512",
     "C:\\Users\\zeker\\.nuget\\packages\\system.memory\\4.5.1\\system.memory.4.5.1.nupkg.sha512",
     "C:\\Users\\zeker\\.nuget\\packages\\system.runtime.compilerservices.unsafe\\6.0.0\\system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512",
