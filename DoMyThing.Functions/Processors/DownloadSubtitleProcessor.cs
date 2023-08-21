@@ -15,8 +15,6 @@ namespace DoMyThing.Functions.Processors
     public class DownloadSubtitleProcessor : IProcessor<DownloadSubtitleModel>
     {
         private readonly string _baseUrl = "https://www.opensubtitles.org";
-        private const string TRCODE = "tur";
-        private const string ENCODE = "en";
         public DownloadSubtitleProcessor()
         {
 
@@ -25,7 +23,7 @@ namespace DoMyThing.Functions.Processors
         {
             IPage page = await OpenBrowserPage();
 
-            await SearchSubtitle(request.SearchText, page);
+            await SearchSubtitle(request.SearchText, request.LanguageCode, page);
 
             await PickFirstSubtitleAndNavigateTo(page);
 
@@ -46,6 +44,7 @@ namespace DoMyThing.Functions.Processors
         private async Task<byte[]> DownloadSubtitle(string href)
         {
             byte[] fileInByteArrays = new byte[0];
+            // TODO : Replace with Http Factory Client 
             using (HttpClient client = new HttpClient())
             {
                 fileInByteArrays = await client.GetByteArrayAsync(_baseUrl + href);
@@ -83,9 +82,9 @@ namespace DoMyThing.Functions.Processors
             await page.WaitForTimeoutAsync(3000);
         }
 
-        private async Task SearchSubtitle(string searchText, IPage page)
+        private async Task SearchSubtitle(string searchText, string languageCode, IPage page)
         {
-            var url = BuildSearchUrl(TRCODE, searchText);
+            var url = BuildSearchUrl(languageCode, searchText);
 
             await page.GoToAsync(url, new NavigationOptions() { WaitUntil = new[] { WaitUntilNavigation.DOMContentLoaded }, Timeout = 0 });
             await page.WaitForSelectorAsync("table#search_results", GetTimeoutOption(10));

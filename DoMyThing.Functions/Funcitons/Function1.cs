@@ -36,7 +36,7 @@ namespace DoMyThing.Functions
 
             #region Temp Code
 
-            model = model ?? new DownloadSubtitleModel { SearchText = "matrix" };
+            model = model ?? new DownloadSubtitleModel { SearchText = "matrix", LanguageCode = "tur" };
 
             #endregion
 
