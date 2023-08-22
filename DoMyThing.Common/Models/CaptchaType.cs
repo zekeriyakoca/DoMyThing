@@ -4,9 +4,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DoMyThing.Functions.Models
+namespace DoMyThing.Common.Models
 {
-    public class Model1 : RequestModelBase
+    public enum CaptchaType
     {
+        ReCaptcha
     }
 }

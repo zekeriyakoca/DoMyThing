@@ -9,6 +9,6 @@ namespace DoMyThing.Functions.Processors
 {
     public interface IProcessor<T> where T : RequestModelBase
     {
-        public void Process(T request);
+        public Task ProcessAsync(T request);
     }
 }

@@ -42,6 +42,20 @@
       "frameworks": {
         "net7.0": {
           "targetAlias": "net7.0",
+          "dependencies": {
+            "HtmlAgilityPack": {
+              "target": "Package",
+              "version": "[1.11.51, )"
+            },
+            "PuppeteerExtraSharp": {
+              "target": "Package",
+              "version": "[2.0.0, )"
+            },
+            "PuppeteerSharp": {
+              "target": "Package",
+              "version": "[9.1.0, )"
+            }
+          },
           "imports": [
             "net461",
             "net462",
