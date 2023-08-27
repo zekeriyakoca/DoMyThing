@@ -30,6 +30,7 @@ namespace DoMyThing.Functions
         }
 
         [Function(nameof(DownloadSubtitleFunction))]
+        [FixedDelayRetry(4, "00:00:10")]
         public async Task Run(
             [ServiceBusTrigger("%DownloadSubtitleQueueName%", Connection = "ServiceBusConnection")] string message
             )
