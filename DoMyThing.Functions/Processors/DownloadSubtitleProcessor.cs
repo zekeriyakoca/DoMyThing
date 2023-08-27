@@ -9,48 +9,57 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using DoMyThing.Common.Services.Interfaces;
+using DoMyThing.Functions.Services;
 
 namespace DoMyThing.Functions.Processors
 {
-    public class DownloadSubtitleProcessor : IProcessor<DownloadSubtitleModel>
+    public class DownloadSubtitleProcessor : IProcessor<DownloadSubtitleModel, DownloadSubtitleResponseModel>
     {
         private readonly string _baseUrl = "https://www.opensubtitles.org";
-        public DownloadSubtitleProcessor()
-        {
+        private readonly HttpClient client;
+        private readonly SubtitleStorageAppService subtitleStorageService;
 
-        }
-        public async Task ProcessAsync(DownloadSubtitleModel request)
+        public DownloadSubtitleProcessor(IHttpClientFactory clientFactory, SubtitleStorageAppService subtitleStorageService)
         {
-            IPage page = await OpenBrowserPage();
+            this.client = clientFactory.CreateClient();
+            this.client.BaseAddress = new Uri(_baseUrl);
+            this.subtitleStorageService = subtitleStorageService;
+        }
+        public async Task<DownloadSubtitleResponseModel> ProcessAsync(DownloadSubtitleModel request)
+        {
+            using IPage page = await OpenBrowserPage();
 
             await SearchSubtitle(request.SearchText, request.LanguageCode, page);
 
             await PickFirstSubtitleAndNavigateTo(page);
-
-            await NavigateToDownloadPage(page);
+            try
+            {
+                await TryToNavigateToDownloadPage(page);
+            }
+            catch
+            {
+                // We're already in Download Page
+            }
 
             string href = await ExtractDownloadUrl(page);
+            string title = await ExtractMovieTitle(page);
 
-            if (href == String.Empty)
+            if (String.IsNullOrWhiteSpace(href))
             {
                 throw new Exception("Unable to find link to download subtitle!");
             }
 
             var file = await DownloadSubtitle(href);
 
-            // TODO : Store into blob storage
+            var fileName = await subtitleStorageService.UploadFileAsync(title, file);
+
+            return new DownloadSubtitleResponseModel(fileName, title);
         }
 
         private async Task<byte[]> DownloadSubtitle(string href)
-        {
-            byte[] fileInByteArrays = new byte[0];
-            // TODO : Replace with Http Factory Client 
-            using (HttpClient client = new HttpClient())
-            {
-                fileInByteArrays = await client.GetByteArrayAsync(_baseUrl + href);
-            }
-            return fileInByteArrays;
-        }
+            => await client.GetByteArrayAsync(href);
+
 
         private static async Task<string> ExtractDownloadUrl(IPage page)
         {
@@ -63,23 +72,32 @@ namespace DoMyThing.Functions.Processors
             return href;
         }
 
-        private async Task NavigateToDownloadPage(IPage page)
+        private static async Task<string> ExtractMovieTitle(IPage page)
+        {
+            var doc = new HtmlDocument();
+            var content = await page.GetContentAsync();
+            doc.LoadHtml(content);
+            var title = doc.GetElementbyId("bt-dwl-bt")
+                               .GetAttributes(new string[] { "data-product-title" })
+                               .SingleOrDefault()?.Value ?? String.Empty;
+            return title;
+        }
+
+
+        private async Task TryToNavigateToDownloadPage(IPage page)
         {
             await page.ClickAsync("table#search_results tr:nth-child(2) .bnone");
 
             await page.WaitForSelectorAsync("#bt-dwl-bt", GetTimeoutOption(10));
 
-            await page.WaitForTimeoutAsync(3000);
+            await page.WaitForTimeoutAsync(5);
         }
 
         private static async Task PickFirstSubtitleAndNavigateTo(IPage page)
         {
             await page.ClickAsync("table#search_results tr:nth-child(2) .bnone");
 
-            //var sortByDownloadUrlSuffix = "/sort-7/asc-0";
-            //await page.GoToAsync( page.Url + sortByDownloadUrlSuffix);
-
-            await page.WaitForTimeoutAsync(3000);
+            await page.WaitForTimeoutAsync(5000);
         }
 
         private async Task SearchSubtitle(string searchText, string languageCode, IPage page)
