@@ -24,7 +24,7 @@ namespace DoMyThing.Common.Services
             this.configuration = configuration;
             this.logger = logger;
             var connectionString = configuration["BlobStorage"] ?? throw new ArgumentNullException("BlobStorage connectionstring cannot be null!");
-            var containerName = configuration["BlobStorageSubtitleContainer"] ?? throw new ArgumentNullException("BlobStorage connectionstring cannot be null!");
+            var containerName = configuration["BlobStorageSubtitleContainer"] ?? throw new ArgumentNullException("Container name cannot be null!");
             container = new BlobContainerClient(connectionString, containerName);
             container.CreateIfNotExists();
         }

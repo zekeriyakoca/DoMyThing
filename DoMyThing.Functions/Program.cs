@@ -13,6 +13,7 @@ var host = new HostBuilder()
         s.AddHttpClient();
         s.AddTransient<IProcessor<DownloadSubtitleModel, DownloadSubtitleResponseModel>, DownloadSubtitleProcessor>();
         s.AddScoped<IBlobStorageByteService, BlobStorageService>();
+        s.AddScoped<IServiceBusService, ServiceBusService>();
     })
     .Build();
 

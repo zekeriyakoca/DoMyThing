@@ -1,8 +1,8 @@
-using System.Net;
+using DoMyThing.Common.Services.Interfaces;
 using DoMyThing.Functions.Models;
 using DoMyThing.Functions.Processors;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -10,48 +10,47 @@ namespace DoMyThing.Functions
 {
     public class DownloadSubtitleFunction
     {
-        private readonly ILogger _logger;
-        //private readonly ProcessorFactory _factory;
-        private readonly IProcessor<DownloadSubtitleModel, DownloadSubtitleResponseModel> _processor;
+        private readonly ILogger logger;
+        private readonly IServiceBusService serviceBusService;
 
-        public DownloadSubtitleFunction(ILoggerFactory loggerFactory, /* ProcessorFactory factory, */IProcessor<DownloadSubtitleModel, DownloadSubtitleResponseModel> processor)
+        private readonly IProcessor<DownloadSubtitleModel, DownloadSubtitleResponseModel> processor;
+        private readonly IConfiguration configuration;
+        private readonly string subtitleDownloadedQueueName;
+
+        public DownloadSubtitleFunction(ILoggerFactory loggerFactory,
+            IServiceBusService serviceBusService,
+            IProcessor<DownloadSubtitleModel, DownloadSubtitleResponseModel> processor,
+            IConfiguration configuration)
         {
-            _logger = loggerFactory.CreateLogger<DownloadSubtitleFunction>();
-            _processor = processor; // factory.GetProcessor<DownloadSubtitleModel>();
-
+            logger = loggerFactory.CreateLogger<DownloadSubtitleFunction>();
+            this.serviceBusService = serviceBusService;
+            this.processor = processor;
+            this.configuration = configuration;
+            subtitleDownloadedQueueName = configuration["SubtitleDownloadedQueueName"] ?? throw new ArgumentException("'Subtitle Downloaded Queue Name' cannot be null!");
         }
 
         [Function(nameof(DownloadSubtitleFunction))]
-        public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req)
+        public async Task Run(
+            [ServiceBusTrigger("%DownloadSubtitleQueueName%", Connection = "ServiceBusConnection")] string message
+            )
         {
-            _logger.LogInformation("C# HTTP trigger function processed a request.");
-
-            string requestBody = String.Empty;
-            using (StreamReader streamReader = new StreamReader(req.Body))
+            logger.LogInformation("C# HTTP trigger function processed a request.");
+            if (String.IsNullOrWhiteSpace(message))
             {
-                requestBody = streamReader.ReadToEnd() ?? "";
+                logger.LogError("Message cannot be null!");
+                return;
             }
-            var model = JsonConvert.DeserializeObject<DownloadSubtitleModel>(requestBody);
 
-            #region Temp Code
-
-            model = model ?? new DownloadSubtitleModel { SearchText = "matrix", LanguageCode = "tur" };
-
-            #endregion
+            var model = JsonConvert.DeserializeObject<DownloadSubtitleModel>(message);
 
             if (model is null)
             {
                 throw new ArgumentNullException("model in body is required!");
             }
 
-            var processResponse = await _processor.ProcessAsync(model);
+            var processResponse = await processor.ProcessAsync(model);
 
-            var response = req.CreateResponse(HttpStatusCode.OK);
-            response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
-
-            response.WriteString("Welcome to Azure Functions!");
-
-            return response;
+            await serviceBusService.SendAsync(subtitleDownloadedQueueName, JsonConvert.SerializeObject(processResponse));
         }
     }
 }
