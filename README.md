@@ -1,6 +1,9 @@
 # DoMyThing
 Authomize your things online. Crawl websites and process them on your behalf.
 
+## Project Architecture 
+![DoMyThings drawio](https://github.com/zekeriyakoca/DoMyThing/assets/35925772/053de993-6629-46a2-b0b9-838d40130a01)
+
 # Componenets
 - Azure Function App
 - Azure Service Bus
@@ -34,3 +37,4 @@ Queues in Azure Service Bus should have been created before running application
     "BrowserlessApiKey": "<Browserless Api Key>"
   }
 ```
+
