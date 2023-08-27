@@ -7,8 +7,9 @@ using System.Threading.Tasks;
 
 namespace DoMyThing.Functions.Processors
 {
-    public interface IProcessor<T> where T : RequestModelBase
+    public interface IProcessor<T, TResult> where T : RequestModelBase
+                                            where TResult : ResponseModelBase
     {
-        public Task ProcessAsync(T request);
+        public Task<TResult> ProcessAsync(T request);
     }
 }

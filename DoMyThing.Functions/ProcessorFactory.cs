@@ -12,10 +12,11 @@ namespace DoMyThing.Functions
     {
         public ProcessorFactory()
         { }
-        public IProcessor<T> GetProcessor<T>() where T : RequestModelBase
+        public IProcessor<T, TResult> GetProcessor<T, TResult>() where T : RequestModelBase
+                                                               where TResult : ResponseModelBase
         {
-            // TODO : Implement here
-            return (IProcessor<T>) new DownloadSubtitleProcessor();
+            throw new NotImplementedException();
+            //(IProcessor<T>) new DownloadSubtitleProcessor();
 
         }
     }

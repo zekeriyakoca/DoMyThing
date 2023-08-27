@@ -9,19 +9,25 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using DoMyThing.Common.Services.Interfaces;
 
 namespace DoMyThing.Functions.Processors
 {
-    public class DownloadSubtitleProcessor : IProcessor<DownloadSubtitleModel>
+    public class DownloadSubtitleProcessor : IProcessor<DownloadSubtitleModel, DownloadSubtitleResponseModel>
     {
         private readonly string _baseUrl = "https://www.opensubtitles.org";
-        public DownloadSubtitleProcessor()
-        {
+        private readonly HttpClient client;
+        private readonly IBlobStorageByteService blobStorageService;
 
-        }
-        public async Task ProcessAsync(DownloadSubtitleModel request)
+        public DownloadSubtitleProcessor(IHttpClientFactory clientFactory, IBlobStorageByteService blobStorageService)
         {
-            IPage page = await OpenBrowserPage();
+            this.client = clientFactory.CreateClient();
+            this.client.BaseAddress = new Uri(_baseUrl);
+            this.blobStorageService = blobStorageService;
+        }
+        public async Task<DownloadSubtitleResponseModel> ProcessAsync(DownloadSubtitleModel request)
+        {
+            using IPage page = await OpenBrowserPage();
 
             await SearchSubtitle(request.SearchText, request.LanguageCode, page);
 
@@ -30,27 +36,23 @@ namespace DoMyThing.Functions.Processors
             await NavigateToDownloadPage(page);
 
             string href = await ExtractDownloadUrl(page);
+            string title = await ExtractMovieTitle(page);
 
-            if (href == String.Empty)
+            if (String.IsNullOrWhiteSpace(href))
             {
                 throw new Exception("Unable to find link to download subtitle!");
             }
 
             var file = await DownloadSubtitle(href);
 
-            // TODO : Store into blob storage
+            var fileName = await blobStorageService.UploadFileAsync(title, file);
+
+            return new DownloadSubtitleResponseModel(fileName, title);
         }
 
         private async Task<byte[]> DownloadSubtitle(string href)
-        {
-            byte[] fileInByteArrays = new byte[0];
-            // TODO : Replace with Http Factory Client 
-            using (HttpClient client = new HttpClient())
-            {
-                fileInByteArrays = await client.GetByteArrayAsync(_baseUrl + href);
-            }
-            return fileInByteArrays;
-        }
+            => await client.GetByteArrayAsync(href);
+
 
         private static async Task<string> ExtractDownloadUrl(IPage page)
         {
@@ -62,6 +64,18 @@ namespace DoMyThing.Functions.Processors
                                    .SingleOrDefault()?.Value ?? String.Empty;
             return href;
         }
+
+        private static async Task<string> ExtractMovieTitle(IPage page)
+        {
+            var doc = new HtmlDocument();
+            var content = await page.GetContentAsync();
+            doc.LoadHtml(content);
+            var title = doc.GetElementbyId("bt-dwl-bt")
+                               .GetAttributes(new string[] { "data-product-title" })
+                               .SingleOrDefault()?.Value ?? String.Empty;
+            return title;
+        }
+
 
         private async Task NavigateToDownloadPage(IPage page)
         {

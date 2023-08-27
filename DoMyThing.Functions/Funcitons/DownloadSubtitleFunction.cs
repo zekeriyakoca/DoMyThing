@@ -8,21 +8,20 @@ using Newtonsoft.Json;
 
 namespace DoMyThing.Functions
 {
-    public class Function1
+    public class DownloadSubtitleFunction
     {
         private readonly ILogger _logger;
-        private readonly ProcessorFactory _factory;
-        private readonly IProcessor<DownloadSubtitleModel> _processor;
+        //private readonly ProcessorFactory _factory;
+        private readonly IProcessor<DownloadSubtitleModel, DownloadSubtitleResponseModel> _processor;
 
-        public Function1(ILoggerFactory loggerFactory)
+        public DownloadSubtitleFunction(ILoggerFactory loggerFactory, /* ProcessorFactory factory, */IProcessor<DownloadSubtitleModel, DownloadSubtitleResponseModel> processor)
         {
-            _logger = loggerFactory.CreateLogger<Function1>();
-            _factory = new ProcessorFactory();
-            _processor = _factory.GetProcessor<DownloadSubtitleModel>();
+            _logger = loggerFactory.CreateLogger<DownloadSubtitleFunction>();
+            _processor = processor; // factory.GetProcessor<DownloadSubtitleModel>();
 
         }
 
-        [Function("Function1")]
+        [Function(nameof(DownloadSubtitleFunction))]
         public async Task<HttpResponseData> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req)
         {
             _logger.LogInformation("C# HTTP trigger function processed a request.");
@@ -45,7 +44,7 @@ namespace DoMyThing.Functions
                 throw new ArgumentNullException("model in body is required!");
             }
 
-            await _processor.ProcessAsync(model);
+            var processResponse = await _processor.ProcessAsync(model);
 
             var response = req.CreateResponse(HttpStatusCode.OK);
             response.Headers.Add("Content-Type", "text/plain; charset=utf-8");
