@@ -1,16 +1,8 @@
-﻿using AngleSharp.Dom;
-using DoMyThing.Functions.Models;
+﻿using DoMyThing.Functions.Models;
 using PuppeteerSharp;
 using HtmlAgilityPack;
-using PuppeteerSharp.Input;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
-using DoMyThing.Common.Services.Interfaces;
 using DoMyThing.Functions.Services;
+using Microsoft.Extensions.Configuration;
 
 namespace DoMyThing.Functions.Processors
 {
@@ -19,16 +11,18 @@ namespace DoMyThing.Functions.Processors
         private readonly string _baseUrl = "https://www.opensubtitles.org";
         private readonly HttpClient client;
         private readonly SubtitleStorageAppService subtitleStorageService;
+        private readonly IConfiguration configuration;
 
-        public DownloadSubtitleProcessor(IHttpClientFactory clientFactory, SubtitleStorageAppService subtitleStorageService)
+        public DownloadSubtitleProcessor(IHttpClientFactory clientFactory, SubtitleStorageAppService subtitleStorageService, IConfiguration configuration)
         {
             this.client = clientFactory.CreateClient();
             this.client.BaseAddress = new Uri(_baseUrl);
             this.subtitleStorageService = subtitleStorageService;
+            this.configuration = configuration;
         }
         public async Task<DownloadSubtitleResponseModel> ProcessAsync(DownloadSubtitleModel request)
         {
-            using IPage page = await OpenBrowserPage();
+            using IPage page = await OpenBrowserPage(isDevelopment: false);
 
             await SearchSubtitle(request.SearchText, request.LanguageCode, page);
 
@@ -108,9 +102,28 @@ namespace DoMyThing.Functions.Processors
             await page.WaitForSelectorAsync("table#search_results", GetTimeoutOption(10));
         }
 
-        private static async Task<IPage> OpenBrowserPage()
+        private async Task<IPage> OpenBrowserPage(bool isDevelopment = true)
         {
-            var browser = await PuppeteerExtentions.CreateLocalPuppeteerAsync();
+            IBrowser browser;
+            if (isDevelopment)
+            {
+                browser = await PuppeteerExtentions.CreateLocalPuppeteerAsync();
+            }
+            else
+            {
+                var configurationString = configuration["BrowserlessApiKey"];
+                if (configurationString == null)
+                {
+                    throw new ArgumentNullException("Browserless ApiKey cannot be null for deployed instance!");
+                }
+
+                var connectionStringParams = new Dictionary<string, string>()
+                {
+
+                };
+                browser = await PuppeteerExtentions.CreatePuppeteer(configurationString, connectionStringParams);
+            }
+
             var page = await browser.NewPageAsync();
             return page;
         }

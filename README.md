@@ -5,6 +5,7 @@ Authomize your things online. Crawl websites and process them on your behalf.
 - Azure Function App
 - Azure Service Bus
 - Azure Blob Storage
+- Browserless Service for Browser
 
 # Functions
 ## Download Subtitle Function
@@ -29,6 +30,7 @@ Queues in Azure Service Bus should have been created before running application
     "BlobStorageSubtitleContainer": "subtitles",
     "DownloadSubtitleQueueName": "download-subtitle",
     "SubtitleDownloadedQueueName": "subtitle-downloaded",
-    "ServiceBusConnection": "<Azure Service Bus Connection String>"
+    "ServiceBusConnection": "<Azure Service Bus Connection String>",
+    "BrowserlessApiKey": "<Browserless Api Key>"
   }
 ```
