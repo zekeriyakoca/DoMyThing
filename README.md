@@ -1,14 +1,6 @@
 # DoMyThing
 Authomize your things online. Crawl websites and process them on your behalf.
 
-## Project Architecture 
-![DoMyThings drawio](https://github.com/zekeriyakoca/DoMyThing/assets/35925772/053de993-6629-46a2-b0b9-838d40130a01)
-
-# Componenets
-- Azure Function App
-- Azure Service Bus
-- Azure Blob Storage
-- Browserless Service for Browser
 
 # Functions
 ## Download Subtitle Function
@@ -17,6 +9,16 @@ Authomize your things online. Crawl websites and process them on your behalf.
 3. Download subtitle
 4. Upload file to Blob storage
 5. Send a message containing saved blob storage name to queue
+   
+## Project Architecture (For "Download Subtitle Function")
+![DoMyThings drawio](https://github.com/zekeriyakoca/DoMyThing/assets/35925772/053de993-6629-46a2-b0b9-838d40130a01)
+
+# Componenets
+- Azure Function App
+- Azure Service Bus
+- Azure Blob Storage
+- Browserless Service for Browser
+
 
 
 # Deployment
