@@ -17,19 +17,17 @@ namespace DoMyThing.Common.Services
     {
         private readonly IConfiguration configuration;
         private readonly ILogger<BlobStorageService> logger;
-        private readonly BlobContainerClient container;
+        private readonly BlobServiceClient serviceClient;
 
         public BlobStorageService(IConfiguration configuration, ILogger<BlobStorageService> logger)
         {
             this.configuration = configuration;
             this.logger = logger;
             var connectionString = configuration["BlobStorage"] ?? throw new ArgumentNullException("BlobStorage connectionstring cannot be null!");
-            var containerName = configuration["BlobStorageSubtitleContainer"] ?? throw new ArgumentNullException("Container name cannot be null!");
-            container = new BlobContainerClient(connectionString, containerName);
-            container.CreateIfNotExists();
+            serviceClient = new BlobServiceClient(connectionString);
         }
 
-        public async Task<string> UploadFileAsync(string fileName, Stream stream)
+        public async Task<string> UploadFileAsync(string containerName, string fileName, Stream stream)
         {
             if (String.IsNullOrWhiteSpace(fileName))
             {
@@ -40,7 +38,7 @@ namespace DoMyThing.Common.Services
                 throw new ArgumentNullException(nameof(stream));
             }
             var normalizedFilename = Randomize(fileName);
-            var client = GetBlobClient(normalizedFilename);
+            var client = GetBlobClient(containerName, normalizedFilename);
 
             stream.Position = 0;
             await client.UploadAsync(stream);
@@ -48,14 +46,14 @@ namespace DoMyThing.Common.Services
             return normalizedFilename;
         }
 
-        public async Task<Stream> DownloadFileAsync(string fileName)
+        public async Task<Stream> DownloadFileAsync(string containerName, string fileName)
         {
-            var client = GetBlobClient(fileName);
+            var client = GetBlobClient(containerName, fileName);
             var response = (await client.DownloadStreamingAsync()).Value;
             return response.Content;
         }
 
-        public async Task<string> UploadFileAsync(string fileName, byte[] fileBytes)
+        public async Task<string> UploadFileAsync(string containerName, string fileName, byte[] fileBytes)
         {
             if (String.IsNullOrWhiteSpace(fileName))
             {
@@ -67,7 +65,7 @@ namespace DoMyThing.Common.Services
             }
 
             var normalizedFilename = Randomize(fileName);
-            var client = GetBlobClient(normalizedFilename);
+            var client = GetBlobClient(containerName, normalizedFilename);
 
             if ((await client.ExistsAsync()).Value)
             {
@@ -82,25 +80,25 @@ namespace DoMyThing.Common.Services
             return normalizedFilename;
         }
 
-        public async Task<byte[]> DownloadFileInBytesAsync(string fileName)
+        public async Task<byte[]> DownloadFileInBytesAsync(string containerName, string fileName)
         {
-            var client = container.GetBlobClient(Randomize(fileName));
+            var client = GetContainerClient(containerName).GetBlobClient(Randomize(fileName));
             var response = (await client.DownloadContentAsync()).Value;
             return response.Content.ToArray();
         }
 
-        public async Task<string> UploadFileAsync(string fileName, string fileAsBase64)
+        public async Task<string> UploadFileAsync(string containerName, string fileName, string fileAsBase64)
         {
             if (String.IsNullOrWhiteSpace(fileAsBase64))
             {
                 throw new ArgumentNullException(nameof(fileAsBase64));
             }
-            return await UploadFileAsync(fileName, Encoding.UTF8.GetBytes(fileAsBase64));
+            return await UploadFileAsync(containerName, fileName, Encoding.UTF8.GetBytes(fileAsBase64));
         }
 
-        public async Task<string> DownloadFileAsBase64Async(string fileName)
+        public async Task<string> DownloadFileAsBase64Async(string containerName, string fileName)
         {
-            var fileBytes = await DownloadFileInBytesAsync(fileName);
+            var fileBytes = await DownloadFileInBytesAsync(containerName, fileName);
             if (fileBytes.Length == 0)
             {
                 // TODO : Test here
@@ -109,10 +107,14 @@ namespace DoMyThing.Common.Services
             return Convert.ToBase64String(fileBytes);
         }
 
-
-        private BlobClient GetBlobClient(string fileName)
+        private BlobClient GetBlobClient(string containerName, string fileName)
         {
-            return container.GetBlobClient(fileName);
+            return GetContainerClient(containerName).GetBlobClient(fileName);
+        }
+
+        private BlobContainerClient GetContainerClient(string containerName)
+        {
+            return serviceClient.GetBlobContainerClient(containerName);
         }
 
         private string Randomize(string fileName)

@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Web;
 using DoMyThing.Common.Services.Interfaces;
+using DoMyThing.Functions.Services;
 
 namespace DoMyThing.Functions.Processors
 {
@@ -17,13 +18,13 @@ namespace DoMyThing.Functions.Processors
     {
         private readonly string _baseUrl = "https://www.opensubtitles.org";
         private readonly HttpClient client;
-        private readonly IBlobStorageByteService blobStorageService;
+        private readonly SubtitleStorageAppService subtitleStorageService;
 
-        public DownloadSubtitleProcessor(IHttpClientFactory clientFactory, IBlobStorageByteService blobStorageService)
+        public DownloadSubtitleProcessor(IHttpClientFactory clientFactory, SubtitleStorageAppService subtitleStorageService)
         {
             this.client = clientFactory.CreateClient();
             this.client.BaseAddress = new Uri(_baseUrl);
-            this.blobStorageService = blobStorageService;
+            this.subtitleStorageService = subtitleStorageService;
         }
         public async Task<DownloadSubtitleResponseModel> ProcessAsync(DownloadSubtitleModel request)
         {
@@ -32,8 +33,14 @@ namespace DoMyThing.Functions.Processors
             await SearchSubtitle(request.SearchText, request.LanguageCode, page);
 
             await PickFirstSubtitleAndNavigateTo(page);
-
-            await NavigateToDownloadPage(page);
+            try
+            {
+                await TryToNavigateToDownloadPage(page);
+            }
+            catch
+            {
+                // We're already in Download Page
+            }
 
             string href = await ExtractDownloadUrl(page);
             string title = await ExtractMovieTitle(page);
@@ -45,7 +52,7 @@ namespace DoMyThing.Functions.Processors
 
             var file = await DownloadSubtitle(href);
 
-            var fileName = await blobStorageService.UploadFileAsync(title, file);
+            var fileName = await subtitleStorageService.UploadFileAsync(title, file);
 
             return new DownloadSubtitleResponseModel(fileName, title);
         }
@@ -77,23 +84,20 @@ namespace DoMyThing.Functions.Processors
         }
 
 
-        private async Task NavigateToDownloadPage(IPage page)
+        private async Task TryToNavigateToDownloadPage(IPage page)
         {
             await page.ClickAsync("table#search_results tr:nth-child(2) .bnone");
 
             await page.WaitForSelectorAsync("#bt-dwl-bt", GetTimeoutOption(10));
 
-            await page.WaitForTimeoutAsync(3000);
+            await page.WaitForTimeoutAsync(5);
         }
 
         private static async Task PickFirstSubtitleAndNavigateTo(IPage page)
         {
             await page.ClickAsync("table#search_results tr:nth-child(2) .bnone");
 
-            //var sortByDownloadUrlSuffix = "/sort-7/asc-0";
-            //await page.GoToAsync( page.Url + sortByDownloadUrlSuffix);
-
-            await page.WaitForTimeoutAsync(3000);
+            await page.WaitForTimeoutAsync(5000);
         }
 
         private async Task SearchSubtitle(string searchText, string languageCode, IPage page)

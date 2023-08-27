@@ -34,7 +34,8 @@ namespace DoMyThing.Functions
             [ServiceBusTrigger("%DownloadSubtitleQueueName%", Connection = "ServiceBusConnection")] string message
             )
         {
-            logger.LogInformation("C# HTTP trigger function processed a request.");
+            logger.LogInformation($"ServisBus trigger processed a request. Message {message}");
+
             if (String.IsNullOrWhiteSpace(message))
             {
                 logger.LogError("Message cannot be null!");
@@ -45,12 +46,17 @@ namespace DoMyThing.Functions
 
             if (model is null)
             {
-                throw new ArgumentNullException("model in body is required!");
+                logger.LogError($"Malformed message! Message is being ignored : {message}");
+                return;
             }
 
             var processResponse = await processor.ProcessAsync(model);
 
+            logger.LogInformation("Subtitle downloaded");
+
             await serviceBusService.SendAsync(subtitleDownloadedQueueName, JsonConvert.SerializeObject(processResponse));
+
+            logger.LogInformation("'Subtitle Downloaded' message has been sent to queue");
         }
     }
 }

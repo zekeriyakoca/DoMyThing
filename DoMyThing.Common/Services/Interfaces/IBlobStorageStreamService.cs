@@ -8,7 +8,14 @@ namespace DoMyThing.Common.Services.Interfaces
 {
     public interface IBlobStorageStreamService
     {
-        Task<string> UploadFileAsync(string fileName, Stream stream);
-        Task<Stream> DownloadFileAsync(string fileName);
+        /// <summary>
+        /// Upload file to Blob Storage
+        /// </summary>
+        /// <param name="containerName"></param>
+        /// <param name="fileName"></param>
+        /// <param name="fileInBytes"></param>
+        /// <returns>uploaded file name as in storage</returns>
+        Task<string> UploadFileAsync(string containerName, string fileName, Stream stream);
+        Task<Stream> DownloadFileAsync(string containerName, string fileName);
     }
 }
