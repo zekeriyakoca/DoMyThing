@@ -9,6 +9,7 @@ namespace DoMyThing.Functions.Models
     public class DownloadSubtitleModel : RequestModelBase
     {
         public string SearchText { get; set; }
-        public string LanguageCode { get; set; } = "tur";
+        public string LanguageCodeFirst { get; set; } = "tur";
+        public string LanguageCodeSecond { get; set; } = "eng";
     }
 }

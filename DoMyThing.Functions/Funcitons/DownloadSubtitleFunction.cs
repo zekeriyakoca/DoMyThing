@@ -53,7 +53,7 @@ namespace DoMyThing.Functions
 
             var processResponse = await processor.ProcessAsync(model);
 
-            logger.LogInformation("Subtitle downloaded");
+            logger.LogInformation("Subtitles downloaded");
 
             await serviceBusService.SendAsync(subtitleDownloadedQueueName, JsonConvert.SerializeObject(processResponse));
 

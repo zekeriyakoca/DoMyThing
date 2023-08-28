@@ -8,12 +8,14 @@ namespace DoMyThing.Functions.Models
 {
     public class DownloadSubtitleResponseModel : ResponseModelBase
     {
-        public DownloadSubtitleResponseModel(string fileName, string movieName)
+        public DownloadSubtitleResponseModel(string firstFileName, string secondFileName, string movieName)
         {
-            FileName = fileName;
+            FirstFileName = firstFileName;
+            SecondFileName = secondFileName;
             MovieName = movieName;
         }
-        public string FileName { get; set; }
+        public string FirstFileName { get; set; }
+        public string SecondFileName { get; set; }
         public string MovieName { get; set; }
     }
 }

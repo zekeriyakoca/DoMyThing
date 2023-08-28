@@ -3,6 +3,8 @@ using PuppeteerSharp;
 using HtmlAgilityPack;
 using DoMyThing.Functions.Services;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 
 namespace DoMyThing.Functions.Processors
 {
@@ -12,19 +14,35 @@ namespace DoMyThing.Functions.Processors
         private readonly HttpClient client;
         private readonly SubtitleStorageAppService subtitleStorageService;
         private readonly IConfiguration configuration;
+        private readonly ILogger<DownloadSubtitleProcessor> logger;
 
-        public DownloadSubtitleProcessor(IHttpClientFactory clientFactory, SubtitleStorageAppService subtitleStorageService, IConfiguration configuration)
+        public DownloadSubtitleProcessor(IHttpClientFactory clientFactory, SubtitleStorageAppService subtitleStorageService, IConfiguration configuration, ILogger<DownloadSubtitleProcessor> logger)
         {
             this.client = clientFactory.CreateClient();
             this.client.BaseAddress = new Uri(_baseUrl);
             this.subtitleStorageService = subtitleStorageService;
             this.configuration = configuration;
+            this.logger = logger;
         }
         public async Task<DownloadSubtitleResponseModel> ProcessAsync(DownloadSubtitleModel request)
         {
-            using IPage page = await OpenBrowserPage(isDevelopment: false);
+            using IPage page = await OpenBrowserPage(isDevelopment: true);
 
-            await SearchSubtitle(request.SearchText, request.LanguageCode, page);
+            var (firstFileName, title1) = await DownloadAndSaveSubtitleForLanguageAsync(request.SearchText, request.LanguageCodeFirst, page);
+           
+            var (secondFileName, title2) = await DownloadAndSaveSubtitleForLanguageAsync(request.SearchText, request.LanguageCodeSecond, page);
+            
+            if (title1 != title2)
+            {
+                logger.LogWarning($"Titles of downloded movies are not a match! title1: {title1}, title2: {title2}, requestModel: {JsonConvert.SerializeObject(request)}");
+            }
+
+            return new DownloadSubtitleResponseModel(firstFileName, secondFileName, title1);
+        }
+
+        private async Task<(string fileNameInStorage, string title)> DownloadAndSaveSubtitleForLanguageAsync(string searchText, string languageCode, IPage page)
+        {
+            await SearchSubtitle(searchText, languageCode, page);
 
             await PickFirstSubtitleAndNavigateTo(page);
             try
@@ -44,11 +62,11 @@ namespace DoMyThing.Functions.Processors
                 throw new Exception("Unable to find link to download subtitle!");
             }
 
-            var file = await DownloadSubtitle(href);
+            var fileInBytes = await DownloadSubtitle(href);
+            var fileName = $"{title}-{languageCode}";
 
-            var fileName = await subtitleStorageService.UploadFileAsync(title, file);
-
-            return new DownloadSubtitleResponseModel(fileName, title);
+            var fileNameInStorage = await subtitleStorageService.UploadFileAsync(fileName, fileInBytes);
+            return (fileNameInStorage: fileNameInStorage, title: title);
         }
 
         private async Task<byte[]> DownloadSubtitle(string href)
