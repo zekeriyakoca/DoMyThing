@@ -25,7 +25,7 @@ namespace PuppeteerSharp
         {
             var options = new LaunchOptions
             {
-                Headless = false,
+                Headless = true,
                 // TODO : Dig down more
                 IgnoredDefaultArgs = new[] { "--enable-automation" }
             };

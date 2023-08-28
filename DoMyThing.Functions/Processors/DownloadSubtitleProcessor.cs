@@ -5,6 +5,9 @@ using DoMyThing.Functions.Services;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using System.IO.Compression;
+using System.IO;
+using static Grpc.Core.Metadata;
 
 namespace DoMyThing.Functions.Processors
 {
@@ -29,9 +32,9 @@ namespace DoMyThing.Functions.Processors
             using IPage page = await OpenBrowserPage(isDevelopment: true);
 
             var (firstFileName, title1) = await DownloadAndSaveSubtitleForLanguageAsync(request.SearchText, request.LanguageCodeFirst, page);
-           
+
             var (secondFileName, title2) = await DownloadAndSaveSubtitleForLanguageAsync(request.SearchText, request.LanguageCodeSecond, page);
-            
+
             if (title1 != title2)
             {
                 logger.LogWarning($"Titles of downloded movies are not a match! title1: {title1}, title2: {title2}, requestModel: {JsonConvert.SerializeObject(request)}");
@@ -70,8 +73,27 @@ namespace DoMyThing.Functions.Processors
         }
 
         private async Task<byte[]> DownloadSubtitle(string href)
-            => await client.GetByteArrayAsync(href);
+        {
+            var zippedFileBytes = await client.GetByteArrayAsync(href);
 
+            using (var archive = new ZipArchive(await client.GetStreamAsync(href), ZipArchiveMode.Read, true))
+            {
+                var subtitleFile = archive.Entries.FirstOrDefault(entry => entry.FullName.EndsWith(".srt"));
+                if (subtitleFile == default)
+                {
+                    logger.LogError($"Subtitle not found in zipped file! download link : {href}");
+                    throw new Exception($"Subtitle not found!");
+                }
+
+                using var stream = subtitleFile.Open();
+                using var memoryStream = new MemoryStream();
+
+                stream.CopyTo(memoryStream);
+                return memoryStream.ToArray();
+
+
+            }
+        }
 
         private static async Task<string> ExtractDownloadUrl(IPage page)
         {
@@ -118,6 +140,7 @@ namespace DoMyThing.Functions.Processors
 
             await page.GoToAsync(url, new NavigationOptions() { WaitUntil = new[] { WaitUntilNavigation.DOMContentLoaded }, Timeout = 0 });
             await page.WaitForSelectorAsync("table#search_results", GetTimeoutOption(10));
+            await page.WaitForTimeoutAsync(5000);
         }
 
         private async Task<IPage> OpenBrowserPage(bool isDevelopment = true)
