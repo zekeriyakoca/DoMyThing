@@ -27,7 +27,9 @@ namespace PuppeteerSharp
             {
                 Headless = true,
                 // TODO : Dig down more
-                IgnoredDefaultArgs = new[] { "--enable-automation" }
+                IgnoredDefaultArgs = new[] { "--enable-automation" },
+                Args = new string[] { "--no-sandbox" }
+
             };
             if (!string.IsNullOrEmpty(userDataDir))
             {
@@ -47,7 +49,8 @@ namespace PuppeteerSharp
         {
             var browserFetcher = new BrowserFetcher(new BrowserFetcherOptions
             {
-                //Path = "./"
+                //Path = "./",
+                Platform = Platform.Linux,
             });
 
             await browserFetcher.DownloadAsync();

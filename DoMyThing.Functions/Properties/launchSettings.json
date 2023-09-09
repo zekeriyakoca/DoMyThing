@@ -2,8 +2,13 @@
   "profiles": {
     "DoMyThing.Functions": {
       "commandName": "Project",
-      "commandLineArgs": "--port 7006",
-      "launchBrowser": false
+      "commandLineArgs": "--port 7006"
+    },
+    "Docker": {
+      "commandName": "Docker",
+      "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}",
+      "httpPort": 32014,
+      "useSSL": false
     }
   }
 }

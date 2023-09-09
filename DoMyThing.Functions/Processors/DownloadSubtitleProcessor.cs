@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using System.IO.Compression;
 using System.IO;
 using static Grpc.Core.Metadata;
+using Microsoft.Extensions.Hosting;
 
 namespace DoMyThing.Functions.Processors
 {
@@ -18,18 +19,20 @@ namespace DoMyThing.Functions.Processors
         private readonly SubtitleStorageAppService subtitleStorageService;
         private readonly IConfiguration configuration;
         private readonly ILogger<DownloadSubtitleProcessor> logger;
+        private readonly IHostEnvironment environment;
 
-        public DownloadSubtitleProcessor(IHttpClientFactory clientFactory, SubtitleStorageAppService subtitleStorageService, IConfiguration configuration, ILogger<DownloadSubtitleProcessor> logger)
+        public DownloadSubtitleProcessor(IHttpClientFactory clientFactory, SubtitleStorageAppService subtitleStorageService, IConfiguration configuration, ILogger<DownloadSubtitleProcessor> logger, IHostEnvironment environment)
         {
             this.client = clientFactory.CreateClient();
             this.client.BaseAddress = new Uri(_baseUrl);
             this.subtitleStorageService = subtitleStorageService;
             this.configuration = configuration;
             this.logger = logger;
+            this.environment = environment;
         }
         public async Task<DownloadSubtitleResponseModel> ProcessAsync(DownloadSubtitleModel request)
         {
-            using IPage page = await OpenBrowserPage(isDevelopment: true);
+            using IPage page = await OpenBrowserPage(isDevelopment: environment.IsDevelopment() || !configuration.GetValue<bool>("IsBrowserlessEnabled"));
 
             var (firstFileName, title1) = await DownloadAndSaveSubtitleForLanguageAsync(request.SearchText, request.LanguageCodeFirst, page);
 
