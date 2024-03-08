@@ -1,2 +1,6 @@
 
 .vs/
+
+DoMyThing.Common/obj/
+
+.vscode/
