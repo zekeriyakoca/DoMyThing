@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using PuppeteerExtraSharp;
+using PuppeteerExtraSharp.Plugins.Recaptcha;
+using PuppeteerExtraSharp.Plugins.Recaptcha.Provider.AntiCaptcha;
 
 namespace PuppeteerSharp
 {
@@ -21,8 +24,8 @@ namespace PuppeteerSharp
         /// Creates local puppeteer instance. May require elevated users permission (VS ran as administrator)
         /// </summary>
         /// <returns></returns>
-        public static Task<IBrowser> CreateLocalPuppeteerAsync(string userDataDir = null)
-        {
+        public static Task<IBrowser> CreateLocalPuppeteerAsync(string userDataDir = null, RecaptchaPlugin recaptchaPlugin = null)
+        {   
             var options = new LaunchOptions
             {
                 Headless = true,
@@ -37,7 +40,7 @@ namespace PuppeteerSharp
                 options.UserDataDir = userDataDir;
             }
 
-            return CreateLocalPuppeteer(options);
+            return CreateLocalPuppeteer(options, recaptchaPlugin);
         }
 
         /// <summary>
@@ -45,7 +48,7 @@ namespace PuppeteerSharp
         /// </summary>
         /// <param name="launchOptions">The launch options.</param>
         /// <returns></returns>
-        public static async Task<IBrowser> CreateLocalPuppeteer(LaunchOptions launchOptions)
+        private static async Task<IBrowser> CreateLocalPuppeteer(LaunchOptions launchOptions, RecaptchaPlugin? recaptchaPlugin = null)
         {
             var browserFetcher = new BrowserFetcher(new BrowserFetcherOptions
             {
@@ -54,7 +57,13 @@ namespace PuppeteerSharp
             });
 
             await browserFetcher.DownloadAsync();
-            return await Puppeteer.LaunchAsync(launchOptions);
+            var puppeter = new PuppeteerExtra();
+            if (recaptchaPlugin != null)
+            {
+                puppeter.Use(recaptchaPlugin);
+            }
+
+            return await puppeter.LaunchAsync(launchOptions);
         }
 
         /// <summary>
